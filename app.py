@@ -9,8 +9,8 @@ app = Flask(__name__)
 # ============================================
 # CONFIGURATION
 # ============================================
-API_ID = int(os.environ.get('API_ID', '31968824'))
-API_HASH = os.environ.get('API_HASH', 'd9847a6694b961248f4052d16b89b912')
+API_ID = int(os.environ.get('API_ID', '36879151'))
+API_HASH = os.environ.get('API_HASH', '45360a236343352099ffa29570f48700)
 SESSION_STRING = os.environ.get('SESSION_STRING', '')
 
 # Check if session exists
