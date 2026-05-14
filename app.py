@@ -8,17 +8,15 @@ import traceback
 app = Flask(__name__)
 
 # ============================================
-# CONFIGURATION
+# CONFIGURATION - FIXED ✅
 # ============================================
 API_ID = int(os.environ.get('API_ID', '36879151'))
-API_HASH = os.environ.get('API_HASH', '45360a236343352099ffa29570f48700'))
+API_HASH = os.environ.get('API_HASH', '45360a236343352099ffa29570f48700')
 SESSION_STRING = os.environ.get('SESSION_STRING', '')
 
-# Create event loop
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 
-# Create client
 try:
     client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH, loop=loop)
 except Exception as e:
