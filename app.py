@@ -7,95 +7,46 @@ import os
 app = Flask(__name__)
 
 # ============================================
-# CONFIGURATION
+# CONFIGURATION - FIXED ✅
 # ============================================
 API_ID = int(os.environ.get('API_ID', '36879151'))
-API_HASH = os.environ.get('API_HASH', '45360a236343352099ffa29570f48700)
+API_HASH = os.environ.get('API_HASH', '45360a236343352099ffa29570f48700')
 SESSION_STRING = os.environ.get('SESSION_STRING', '')
 
-# Check if session exists
-if not SESSION_STRING:
-    raise ValueError("SESSION_STRING environment variable not set!")
-
-# Create client
-client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH)
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH, loop=loop)
 
 # ============================================
 # ROUTES
 # ============================================
 @app.route('/')
 def home():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>BRONX ULTRA API</title>
-        <style>
-            body { background: #000; color: #0ff; font-family: monospace; text-align: center; padding: 50px; }
-            code { background: #111; padding: 10px; color: #fa0; border-radius: 5px; }
-        </style>
-    </head>
-    <body>
-        <h1>🆔 BRONX ULTRA API</h1>
-        <h3>✅ ONLINE</h3>
-        <code>GET /chatid?username=USERNAME</code>
-        <p style="color:#555; margin-top:30px;">@BRONX_ULTRA</p>
-    </body>
-    </html>
-    """
+    return "<h1 style='color:#0ff;text-align:center;padding:50px;'>🆔 BRONX ULTRA API ✅</h1>"
 
 @app.route('/chatid')
 def chatid():
     username = request.args.get('username', '').strip()
-    
     if not username:
-        return jsonify({
-            "status": "error",
-            "message": "Missing username",
-            "credit": "@BRONX_ULTRA"
-        }), 400
+        return jsonify({"error": "Missing username"}), 400
     
-    async def get_entity():
+    async def get():
         await client.connect()
-        clean = username.replace("@", "")
-        entity = await client.get_entity(f"@{clean}")
-        
-        result = {
+        e = await client.get_entity(username.replace("@", ""))
+        return {
             "status": "success",
-            "chat_id": entity.id,
-            "username": getattr(entity, 'username', clean),
-        }
-        
-        if hasattr(entity, 'broadcast') and entity.broadcast:
-            result["type"] = "channel"
-            result["title"] = getattr(entity, 'title', '')
-        elif hasattr(entity, 'title'):
-            result["type"] = "group"
-            result["title"] = entity.title
-        else:
-            result["type"] = "user"
-            result["first_name"] = getattr(entity, 'first_name', '')
-        
-        return result
-    
-    try:
-        result = asyncio.run(get_entity())
-        result["credit"] = "@BRONX_ULTRA"
-        return jsonify(result)
-    except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": str(e),
+            "chat_id": e.id,
+            "username": getattr(e, 'username', username),
+            "first_name": getattr(e, 'first_name', ''),
             "credit": "@BRONX_ULTRA"
-        }), 404
+        }
+    
+    return jsonify(loop.run_until_complete(get()))
 
 @app.route('/health')
 def health():
-    return jsonify({"status": "ok", "credit": "@BRONX_ULTRA"})
+    return jsonify({"status": "ok"})
 
-# ============================================
-# MAIN
-# ============================================
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
